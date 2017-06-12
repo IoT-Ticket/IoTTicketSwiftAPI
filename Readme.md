@@ -74,7 +74,7 @@ To use IoTTicketSwiftAPI as a [Swift Package Manager](https://swift.org/package-
 import PackageDescription
 
 let package = Package(
-    name: "HelloIoTTicketSwiftAPI",
+    name: "IoTTicketSwiftAPI",
     dependencies: [
         .Package(url: "https://github.com/IoTTicket-swift/IoTTicketSwiftAPI.git", "0.0.1")
     ]
