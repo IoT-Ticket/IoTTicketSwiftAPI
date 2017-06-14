@@ -155,7 +155,7 @@ client.registerDevice(device: device) { deviceDetails, error in
 let latitude = Datanode(name: "Latitude", path: "Location", v: 63.0951)
 let longitude = Datanode(name: "Longitude", path: "Location", v: 21.6165)
 
-client.writeDatanode(deviceId: deviceId, datanodes: [latitude, longitude, speed])
+client.writeDatanode(deviceId: deviceId, datanodes: [latitude, longitude])
 ```
 ### Get datanodes for a device
 ```swift
