@@ -21,10 +21,10 @@ class IoTTicketSwiftAPITests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        username = "***REMOVED***"
-        password = "***REMOVED***"
+        username = "username"
+        password = "password"
         baseURL = "https://my.iot-ticket.com/api/v1"
-        deviceId = "4e0f17895ae04c57a6d24baaae08b6b3"
+        deviceId = "deviceId"
         client = IoTTicketClient(baseURL: baseURL, username: username, password: password)
         
     }
