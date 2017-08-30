@@ -158,7 +158,7 @@ class IoTTicketSwiftAPITests: XCTestCase {
             XCTAssertTrue((deviceDatanodes?.fullSize)!>=2)
             XCTAssertEqual(10, deviceDatanodes?.limit)
             XCTAssertEqual(0, deviceDatanodes?.offset)
-            print(deviceDatanodes?.datanodes as Any)
+            XCTAssertNotNil(deviceDatanodes?.datanodes)
             expect.fulfill()
         }
         
