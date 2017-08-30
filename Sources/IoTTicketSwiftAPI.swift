@@ -15,7 +15,7 @@ public typealias DownloadedDeviceDetailsArray = (_ deviceDetailsArray: DevicesLi
 /// A closure executed when the function which returns deviceDatanodes is complete
 public typealias DownloadedDeviceDatanodes = (_ deviceDatanodes: DatanodeList?, _ error: IoTServerError?) -> ()
 /// A closure executed when the function which returns datanodeRead is complete
-public typealias DownloadedDeviceDatanodeRead = (_ datanodeRead: [DatanodeRead]?, _ error: IoTServerError?) -> ()
+public typealias DownloadedDeviceDatanodeRead = (_ datanodeRead: DatanodeRead?, _ error: IoTServerError?) -> ()
 /// A closure executed when the function which returns quota is complete
 public typealias DownloadedAllQuota = (_ quota: Quota?, _ error: IoTServerError?) -> ()
 /// A closure executed when the function which returns deviceQuota is complete
@@ -23,12 +23,14 @@ public typealias DownloadedDeviceQuota = (_ deviceQuota: DeviceQuota?, _ error: 
 /// A closure executed when the function which returns writeDatanodesResult is complete
 public typealias DownloadedWriteDatanodes = (_ writeDatanodesResult: WriteDatanodesResult?, _ error: IoTServerError?) -> ()
 /// A closure executed when the function which returns an object is complete
-public typealias DownloadedData = (_ success: Bool, _ object: Any?) -> ()
+public typealias DownloadedData = (_ success: Bool, _ object: Data) -> ()
 
 // MARK: - IoT-Ticket API Client
 
 /// Main client with provided methods. For more information download the [IoT-Ticket API Developement Guide](https://www.iot-ticket.com/images/Files/IoT-Ticket.com_IoT_API.pdf)
 open class IoTTicketClient {
+    
+    // MARK: - Properties
     
     /// The username registered on my.iot-ticket.com
     public var username: String
@@ -76,6 +78,9 @@ open class IoTTicketClient {
     /// URL path to devices
     private var deviceResource: String { return "devices/" }
     
+    /// JSONDecoder object
+    private let decoder = JSONDecoder()
+    
     // MARK: - Provided methods
     
     /**
@@ -91,37 +96,14 @@ open class IoTTicketClient {
     open func writeDatanode(deviceId: String, datanodes: [Datanode], completion: DownloadedWriteDatanodes? = nil) {
         /// URL path to write data
         var writeDataResourceFormat: String { return "process/write/\(deviceId)/" }
-        // Convert to array of dictionaries
-        let datanodesToDict = datanodes.map { datanode in
-            return [
-                
-                "name": datanode.name,
-                "path": datanode.path as Any,
-                "v": datanode.v,
-                "ts": datanode.ts as Any,
-                "unit": datanode.unit as Any,
-                "dataType": datanode.dataType as Any
-            ]
-        }
-        post(request: clientURLRequest(path: writeDataResourceFormat, params: datanodesToDict, credentials: credentials)) { (success, object) -> () in
+        post(request: clientURLRequestWithParameters(path: writeDataResourceFormat, params: datanodes, credentials: credentials)) { (success, object) -> () in
             guard let completion = completion else { return }
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    if let json = object as? Dictionary<String, AnyObject> {
-                        var writeDatanodesResult = WriteDatanodesResult()
-                        writeDatanodesResult.totalWritten = json["totalWritten"] as? Int
-                        if let writeResults = json["writeResults"] as? [Dictionary<String, Any>] {
-                            writeDatanodesResult.writeResults = writeResults.map { result -> WriteResults in
-                                var singleWriteResult = WriteResults()
-                                singleWriteResult.href = result["href"] as? String
-                                singleWriteResult.writtenCount = result["writtenCount"] as? Int
-                                return singleWriteResult
-                            }
-                        }
-                        completion(writeDatanodesResult, nil)
-                    }
+                    let writeDatanodeResult = try? self.decoder.decode(WriteDatanodesResult.self, from: object)
+                    completion(writeDatanodeResult, nil)
                 } else {
-                    completion(nil, getErrorInfo(object: object) as IoTServerError?)
+                    completion(nil, getErrorInfo(data: object))
                 }
             }
         }
@@ -183,30 +165,14 @@ open class IoTTicketClient {
         get(request: clientURLRequest(path: path, credentials: credentials)) { (success, object) -> () in
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    if let json = object as? Dictionary<String, AnyObject> {
-                        if let datanodeReads = json["datanodeReads"] as? Array<Dictionary<String, AnyObject>> {
-                            var datanode = DatanodeRead()
-                            let datanodeReadArray: Array<DatanodeRead> = datanodeReads.map { singleDatanode in
-                                datanode.dataType = singleDatanode["dataType"] as? String
-                                datanode.name = singleDatanode["name"] as? String
-                                datanode.path = singleDatanode["path"] as? String
-                                datanode.unit = singleDatanode["unit"] as? String
-                                if let valuesAsDict = singleDatanode["values"] as? [Dictionary<String, Any>] {
-                                    datanode.values = valuesAsDict.map { vts in
-                                        var tempValueTimestamp = Values()
-                                        tempValueTimestamp.value = vts[ValueTimeStamp.value.rawValue]! as? String
-                                        tempValueTimestamp.timeStamp = vts[ValueTimeStamp.timeStamp.rawValue] as? UInt64
-                                        return tempValueTimestamp
-                                    }
-                                }
-                                
-                                return datanode
-                            }
-                            completion(datanodeReadArray, nil)
-                        }
+                    do {
+                    let datanodeReadArray = try self.decoder.decode(DatanodeRead.self, from: object)
+                        completion(datanodeReadArray, nil)
+                    } catch {
+                        print(error)
                     }
                 } else {
-                    completion(nil, getErrorInfo(object: object))
+                    completion(nil, getErrorInfo(data: object))
                 }
             }
         }
@@ -231,26 +197,14 @@ open class IoTTicketClient {
             
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    if let json = object as? Dictionary<String, AnyObject> {
-                        var datanodeList = DatanodeList()
-                        if let items = json["items"] as? Array<Dictionary<String, AnyObject>> {
-                            var datanode = DatanodeInfo()
-                            datanodeList.datanodes = items.map { item -> DatanodeInfo in
-                                datanode.dataType = item["dataType"] as? String
-                                datanode.href = item["href"] as? String
-                                datanode.name = item["name"] as? String
-                                datanode.path = item["path"] as? String
-                                datanode.unit = item["unit"] as? String
-                                return datanode
-                            }
-                        }
-                        datanodeList.fullSize = json["fullSize"] as? Int
-                        datanodeList.limit = json["limit"] as? Int
-                        datanodeList.offset = json["offset"] as? Int
+                    do {
+                        let datanodeList = try self.decoder.decode(DatanodeList.self, from: object)
                         completion(datanodeList, nil)
+                    } catch {
+                        print(error)
                     }
                 } else {
-                    completion(nil, getErrorInfo(object: object))
+                    completion(nil, getErrorInfo(data: object))
                 }
             }
             
@@ -271,32 +225,13 @@ open class IoTTicketClient {
         /// URL path for getting information of devices
         var param: String { return deviceResource + "?limit=\(limit)&offset=\(offset)" }
         get(request: clientURLRequest(path: param, credentials: credentials)) { (success, object) -> () in
-            print(object!)
+            print(object)
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    if let json = object as? Dictionary<String, AnyObject> {
-                        var devicesList = DevicesList()
-                        if let items = json["items"] as? Array<Dictionary<String, AnyObject>> {
-                            devicesList.devices = items.map { item -> Device in
-                                let deviceDetails = Device()
-                                deviceDetails.name = item["name"] as! String!
-                                deviceDetails.manufacturer = item["manufacturer"] as! String!
-                                deviceDetails.deviceId = item["deviceId"] as? String
-                                deviceDetails.createdAt = item["createdAt"] as? String
-                                deviceDetails.href = URL(string: item["href"] as! String)
-                                deviceDetails.attributes = item["attributes"] as? [Dictionary<String, String>]
-                                deviceDetails.deviceDescription = item["description"] as? String
-                                deviceDetails.type = item["type"] as? String
-                                return deviceDetails
-                            }
-                        }
-                        devicesList.fullSize = json["fullSize"] as? Int
-                        devicesList.limit = json["limit"] as? Int
-                        devicesList.offset = json["offset"] as? Int
-                        completion(devicesList, nil)
-                    }
+                    let devicesList = try? self.decoder.decode(DevicesList.self, from: object)
+                    completion(devicesList, nil)
                 } else {
-                    completion(nil, getErrorInfo(object: object))
+                    completion(nil, getErrorInfo(data: object))
                 }
             }
             
@@ -319,20 +254,10 @@ open class IoTTicketClient {
             
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    if let json = object as? Dictionary<String, AnyObject> {
-                        let deviceDetails = Device()
-                        deviceDetails.deviceId = json["deviceId"] as? String
-                        deviceDetails.createdAt = json["createdAt"] as? String
-                        deviceDetails.href = URL(string: json["href"] as! String)
-                        deviceDetails.attributes = json["attributes"] as? [Dictionary<String, String>]
-                        deviceDetails.type = json["type"] as? String
-                        deviceDetails.manufacturer = json["manufacturer"] as? String
-                        deviceDetails.deviceDescription = json["description"] as? String
-                        deviceDetails.name = json["name"] as? String
-                        completion(deviceDetails, nil)
-                    }
+                    let deviceDetails = try? self.decoder.decode(Device.self, from: object)
+                    completion(deviceDetails, nil)
                 } else {
-                    completion(nil, getErrorInfo(object: object))
+                    completion(nil, getErrorInfo(data: object))
                 }
             }
         }
@@ -349,23 +274,13 @@ open class IoTTicketClient {
     
     open func registerDevice(device: Device, completion: @escaping DownloadedDeviceDetails) {
         
-        post(request: clientURLRequest(path: deviceResource, params: device.toDict(), credentials: credentials)) { (success, object) -> () in
+        post(request: clientURLRequestWithParameters(path: deviceResource, params: device, credentials: credentials)) { (success, object) -> () in
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    if let json = object as? Dictionary<String, AnyObject> {
-                        let deviceDetails = Device()
-                        deviceDetails.name = json["name"] as! String!
-                        deviceDetails.manufacturer = json["manufacturer"] as! String!
-                        deviceDetails.type = json["type"] as? String
-                        deviceDetails.deviceDescription = json["description"] as? String
-                        deviceDetails.attributes = json["attributes"] as? [Dictionary<String, String>]
-                        deviceDetails.deviceId = json["deviceId"] as? String
-                        deviceDetails.createdAt = json["createdAt"] as? String
-                        deviceDetails.href = URL(string: json["href"] as! String)
-                        completion(deviceDetails, nil)
-                    }
+                    let deviceDetails = try? self.decoder.decode(Device.self, from: object)
+                    completion(deviceDetails, nil)
                 } else {
-                    completion(nil, getErrorInfo(object: object))
+                    completion(nil, getErrorInfo(data: object))
                 }
             }
         }
@@ -385,17 +300,10 @@ open class IoTTicketClient {
             
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    if let json = object as? Dictionary<String, AnyObject> {
-                        var quota = Quota()
-                        quota.totalDevices = json["totalDevices"] as? Int
-                        quota.maxNumberOfDevices = json["maxNumberOfDevices"] as? Int
-                        quota.maxDataNodePerDevice = json["maxDataNodePerDevice"] as? Int
-                        quota.usedStorageSize = json["usedStorageSize"] as? Int
-                        quota.maxStorageSize = json["maxStorageSize"] as? Int
-                        completion(quota, nil)
-                    }
+                    let quota = try? self.decoder.decode(Quota.self, from: object)
+                    completion(quota, nil)
                 } else {
-                    completion(nil, getErrorInfo(object: object))
+                    completion(nil, getErrorInfo(data: object))
                 }
             }
         }
@@ -416,17 +324,10 @@ open class IoTTicketClient {
             
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    if let json = object as? Dictionary<String, AnyObject> {
-                        var deviceQuota = DeviceQuota()
-                        deviceQuota.deviceId = json["deviceId"] as? String
-                        deviceQuota.totalRequestToday = json["totalRequestToday"] as? Int
-                        deviceQuota.maxReadRequestPerDay = json["maxReadRequestPerDay"] as? Int
-                        deviceQuota.numberOfDataNodes = json["numberOfDataNodes"] as? Int
-                        deviceQuota.storageSize = json["storageSize"] as? Int
-                        completion(deviceQuota, nil)
-                    }
+                    let deviceQuota = try? self.decoder.decode(DeviceQuota.self, from: object)
+                    completion(deviceQuota, nil)
                 } else {
-                    completion(nil, getErrorInfo(object: object))
+                    completion(nil, getErrorInfo(data: object))
                 }
             }
         }
@@ -442,14 +343,16 @@ open class IoTTicketClient {
         let session = URLSession(configuration: URLSessionConfiguration.default)
         
         session.dataTask(with: mutableRequest) { (data, response, error) -> Void in
-            if let data = data {
-                let json = try? JSONSerialization.jsonObject(with: data, options: [])
-                if let response = response as? HTTPURLResponse, 200...299 ~= response.statusCode {
-                    completion(true, json)
-                } else {
-                    completion(false, json)
-                }
+            guard let data = data else {
+                print("No data in response.")
+                return
             }
+                if let response = response as? HTTPURLResponse, 200...299 ~= response.statusCode {
+                    completion(true, data)
+                } else {
+                    // handle error
+                    completion(false, data)
+                }
             }.resume()
         
     }
@@ -471,16 +374,39 @@ open class IoTTicketClient {
         - params: parameters to include in the HTTP body.
         - credentials: basic credentials to include in the request
      */
-    fileprivate func clientURLRequest(path: String, params: Any? = nil, credentials: String?) -> URLRequest {
-        var request = URLRequest(url: URL(string: baseURL + path)!)
+    fileprivate func clientURLRequestWithParameters<T: Encodable>(path: String, params: T, credentials: String?) -> URLRequest {
+        let fullURL = URL(string: baseURL + path)!
+        var request = URLRequest(url: fullURL)
         print("PATH: ", baseURL + path)
-        if let params = params {
-            let jsonData = try? JSONSerialization.data(withJSONObject: params, options: .prettyPrinted)
+        do {
+            print("Parameters", params)
+            let jsonData = try JSONEncoder().encode(params)
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = jsonData
-            print("PARAMS: \(params)")
-            print("HTTP BODY: ", String(bytes: request.httpBody!, encoding: String.Encoding.utf8)!)
+        } catch {
+            print(error)
         }
+        
+        //            print("PARAMS: \(params)")
+        print("HTTP BODY: ", String(bytes: request.httpBody!, encoding: String.Encoding.utf8)!)
+        if let credentials = credentials {
+            request.addValue("Basic \(credentials)", forHTTPHeaderField: "Authorization")
+        }
+        return request
+    }
+    
+    /**
+     Setup URL request with credentials.
+     
+     - parameters:
+     
+         - path: URL path for the request.
+         - credentials: basic credentials to include in the request
+     */
+    fileprivate func clientURLRequest(path: String, credentials: String?) -> URLRequest {
+        let fullURL = URL(string: baseURL + path)!
+        var request = URLRequest(url: fullURL)
+        print("PATH: ", baseURL + path)
         if let credentials = credentials {
             request.addValue("Basic \(credentials)", forHTTPHeaderField: "Authorization")
         }
@@ -510,8 +436,10 @@ public func deviceAttribute(key: String, value: String) -> Dictionary<String,Str
     return ["key":mutableKey.restrictString(restriction: IoTRestrictions.maxAttributeLength), "value":mutableValue.restrictString(restriction: IoTRestrictions.maxAttributeLength)]
 }
 
-///Extract error from server.
-fileprivate func getErrorInfo(object: Any?) -> IoTServerError? {
+
+/// Extract error from server.
+fileprivate func getErrorInfo(data: Data) -> IoTServerError? {
+    let object = try? JSONSerialization.jsonObject(with: data, options: [])
     var message = "There was an error"
     var Code: Int? = nil
     if let error = object as? Dictionary<String, AnyObject> {

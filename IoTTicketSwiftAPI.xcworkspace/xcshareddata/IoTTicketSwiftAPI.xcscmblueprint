@@ -1,5 +1,5 @@
 {
-  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "3DC13077D24B7ED324535AB9E39C02D38E600DD3+++C42E585",
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "0D5154C3D4AB01AF91DA3F9581BA42B73F327478+++C42E585",
   "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
 
   },
@@ -8,7 +8,7 @@
     "D0725CAC6FF2D66F2C83C2C48DC12106D42DAA64+++2BF4988" : 9223372036854775807,
     "E084C86B03F81D63323C9E7510697EA528A758C7+++387EE7C" : 0,
     "95438028B10BBB846574013D29F154A00556A9D1+++231572E" : 9223372036854775807,
-    "3DC13077D24B7ED324535AB9E39C02D38E600DD3+++C42E585" : 9223372036854775807,
+    "0D5154C3D4AB01AF91DA3F9581BA42B73F327478+++C42E585" : 0,
     "95438028B10BBB846574013D29F154A00556A9D1+++2664596" : 9223372036854775807
   },
   "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "73AED094-79E0-4BF0-8AD2-DA2D6CDCFBDD",
@@ -17,7 +17,7 @@
     "D0725CAC6FF2D66F2C83C2C48DC12106D42DAA64+++2BF4988" : "IoTTicketSwiftAPI\/Carthage\/Checkouts\/Quick\/",
     "E084C86B03F81D63323C9E7510697EA528A758C7+++387EE7C" : "IoTTicketSwiftAPI\/Carthage\/Checkouts\/xcconfigs\/",
     "95438028B10BBB846574013D29F154A00556A9D1+++231572E" : "IoTTicketSwiftAPI\/Carthage\/Checkouts\/Nimble\/",
-    "3DC13077D24B7ED324535AB9E39C02D38E600DD3+++C42E585" : "IoTTicketSwiftAPI\/",
+    "0D5154C3D4AB01AF91DA3F9581BA42B73F327478+++C42E585" : "IoTTicketSwiftAPI\/",
     "95438028B10BBB846574013D29F154A00556A9D1+++2664596" : "IoTTicketSwiftAPI\/Carthage\/Checkouts\/Quick\/Externals\/Nimble\/"
   },
   "DVTSourceControlWorkspaceBlueprintNameKey" : "IoTTicketSwiftAPI",
@@ -27,7 +27,7 @@
     {
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/iDanbo\/IoTTicketSwiftAPI.git",
       "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
-      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "3DC13077D24B7ED324535AB9E39C02D38E600DD3+++C42E585"
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "0D5154C3D4AB01AF91DA3F9581BA42B73F327478+++C42E585"
     },
     {
       "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/Quick\/Nimble.git",
