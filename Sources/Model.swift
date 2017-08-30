@@ -10,8 +10,8 @@ import Foundation
 
 /// Your IoT device. Once registered, it will show up under the user's enterprise.
 public class Device: Codable {
-    private var _name: String!
-    private var _manufacturer: String!
+    private var _name: String
+    private var _manufacturer: String
     private var _type: String?
     private var _deviceDescription: String?
     private var _attributes: [Dictionary<String, String>]?
@@ -30,7 +30,7 @@ public class Device: Codable {
             - devicedDescription: A description of the device: what it does or where it is located
             - attributes: Store additional attributes for the devices
      */
-    public init(name: String!, manufacturer: String!, type: String? = nil, deviceDescription: String? = nil, attributes: [Dictionary<String, String>]? = nil) {
+    public init(name: String, manufacturer: String, type: String? = nil, deviceDescription: String? = nil, attributes: [Dictionary<String, String>]? = nil) {
         
         self._name = name
         self._manufacturer = manufacturer
@@ -39,34 +39,8 @@ public class Device: Codable {
         self._attributes = attributes
     }
     
-//    public override init(){
-//
-//    }
-    
-//    public required init?(coder aDecoder: NSCoder) {
-//        self._name = aDecoder.decodeObject(forKey: "name") as! String
-//        self._manufacturer = aDecoder.decodeObject(forKey: "manufacturer") as! String
-//        self._type = aDecoder.decodeObject(forKey: "type") as? String
-//        self._attributes = aDecoder.decodeObject(forKey: "attributes") as? [[String:String]]
-//        self._deviceId = aDecoder.decodeObject(forKey: "deviceId") as? String
-//        self._createdAt = aDecoder.decodeObject(forKey: "createdAt") as? String
-//        self._deviceDescription = aDecoder.decodeObject(forKey: "deviceDescription") as? String
-//        self._href = aDecoder.decodeObject(forKey: "href") as? URL
-//    }
-//    public func encode(with aCoder: NSCoder) {
-//        aCoder.encode(self.name, forKey: "name")
-//        aCoder.encode(self.manufacturer, forKey: "manufacturer")
-//        aCoder.encode(self.type, forKey: "type")
-//        aCoder.encode(self.attributes, forKey: "attributes")
-//        aCoder.encode(self.deviceId, forKey: "deviceId")
-//        aCoder.encode(self.createdAt, forKey: "createdAt")
-//        aCoder.encode(self.deviceDescription, forKey: "deviceDescription")
-//        aCoder.encode(self.href, forKey: "href")
-//    }
-    
-    
     /// A short name for the device. Maximum 100 characters.
-    public var name: String! {
+    public var name: String {
         get {
             return _name.restrictString(restriction: IoTRestrictions.maxNameLength)
         }
@@ -76,7 +50,7 @@ public class Device: Codable {
     }
     
     /// Short name for the device’s manufacturer. Maximum 100 characters.
-    public var manufacturer: String! {
+    public var manufacturer: String {
         get {
             return _manufacturer.restrictString(restriction: IoTRestrictions.maxNameLength)
         }
