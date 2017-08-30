@@ -1,13 +1,11 @@
+![IoT-Ticket](https://user-images.githubusercontent.com/17162460/27128045-c9c48336-5105-11e7-8eba-8087dab959ec.png)
 ## IoTTicketSwiftAPI
-
 [![Platforms](https://img.shields.io/cocoapods/p/IoTTicketSwiftAPI.svg)](https://cocoapods.org/pods/IoTTicketSwiftAPI)
 [![License](https://img.shields.io/cocoapods/l/IoTTicketSwiftAPI.svg)](https://raw.githubusercontent.com/iDanbo/IoTTicketSwiftAPI/master/LICENSE)
 
 [![Swift Package Manager](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-brightgreen.svg)](https://github.com/apple/swift-package-manager)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 [![CocoaPods compatible](https://img.shields.io/cocoapods/v/IoTTicketSwiftAPI.svg)](https://cocoapods.org/pods/IoTTicketSwiftAPI)
-
-[![Travis](https://img.shields.io/travis/iDanbo/IoTTicketSwiftAPI/master.svg)](https://travis-ci.org/iDanbo/IoTTicketSwiftAPI/branches)
 
 IoT-Ticket REST client in Swift
 
@@ -127,7 +125,92 @@ $ git submodule update --init --recursive
 - And that's it!
 
 ## Usage
+### Creating a client
+```swift
+import IoTTicketSwiftAPI
 
+let username = "username"
+let password = "password"
+let baseURL = "https://my.iot-ticket.com/api/v1/"
+
+let client = IoTTicketClient(baseURL: baseURL, username: username, password: password)
+```
+### Registering a device
+```swift
+let device = Device(name: "My iPhone", manufacturer: "Apple", type: "iPhone", deviceDescription: "Device registered with iOS framework", attributes: [deviceAttribute(key: "swift", value: "api"), deviceAttribute(key: "create", value: "apps")])
+
+client.registerDevice(device: device) { deviceDetails, error in
+    if let error = error {
+        switch error {
+            // Handle error
+        }
+    }
+    if let deviceDetails = deviceDetails {
+        // Save your device details
+    }
+}
+```
+### Sending data
+```swift
+let latitude = Datanode(name: "Latitude", path: "Location", v: 63.0951)
+let longitude = Datanode(name: "Longitude", path: "Location", v: 21.6165)
+
+client.writeDatanode(deviceId: deviceId, datanodes: [latitude, longitude])
+```
+### Get datanodes for a device
+```swift
+client.getDatanodes(deviceId: deviceId, limit: 10, offset: 0) { deviceDatanodes, error in
+    if let deviceDatanodes = deviceDatanodes {
+        // List datanodes
+    }
+ }
+ ```
+ ### Read data
+ ```swift
+let fromDate = dateToTimestamp(date: "2016-02-21 00:00:00")
+let toDate = dateToTimestamp(date: "2017-04-11 00:00:00")
+        
+client.readDatanodes(deviceId: deviceId, criteria: ["latitude", "longitude"], fromDate: fromDate, toDate: toDate, limit: 10000) { datanodeReadArray, error in
+    if let datanodeReadArray {
+        // Read datanodes with values
+    }
+  }
+```
+### Get devices
+```swift
+client.getDevices { devicesList, error in
+    if let deviceList = deviceList {
+        // List your devices
+    }
+ }
+```
+### Get a device
+```swift
+client.getDevice(deviceId: deviceId) { deviceDetails, error in
+    if let deviceDetails = deviceDetails {
+        // Information for a specific device
+    }
+ }
+```
+### Get overall quota
+```swift
+client.getAllQuota { quota, error in
+    if let quota = quota {
+        // Your overall quota
+    }
+ }
+```
+### Get device specific quota
+```swift
+client.getDeviceQuota(deviceId: deviceId) { deviceQuota, error in
+    if let deviceQuota = deviceQuota {
+        // Device specific quota
+    }
+ }
+```
+### API documentation
+For more information check out the IoT-Ticket REST API documentation
+https://www.iot-ticket.com/images/Files/IoT-Ticket.com_IoT_API.pdf. 
 ## License
 
 IoTTicketSwiftAPI is released under the MIT license. See [LICENSE](https://github.com/iDanbo/IoTTicketSwiftAPI/blob/master/LICENSE) for details.
