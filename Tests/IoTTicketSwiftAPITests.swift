@@ -21,10 +21,10 @@ class IoTTicketSwiftAPITests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        username = "username"
-        password = "password"
+        username = "degerev1"
+        password = "ehshBU6w"
         baseURL = "https://my.iot-ticket.com/api/v1"
-        deviceId = "deviceId"
+        deviceId = "4e0f17895ae04c57a6d24baaae08b6b3"
         client = IoTTicketClient(baseURL: baseURL, username: username, password: password)
         
     }
@@ -75,6 +75,7 @@ class IoTTicketSwiftAPITests: XCTestCase {
             XCTAssertTrue((devicesList?.fullSize)!>=1)
             XCTAssertEqual(10, devicesList?.limit)
             XCTAssertEqual(0, devicesList?.offset)
+            XCTAssertNotNil(devicesList?.devices)
             expect.fulfill()
         }
         
@@ -137,10 +138,10 @@ class IoTTicketSwiftAPITests: XCTestCase {
         let expect = expectation(description: "The function should read datanodes value")
         
         let fromDate = dateToTimestamp(date: "2016-02-21 00:00:00")
-        let toDate = dateToTimestamp(date: "2017-04-11 00:00:00")
+        let toDate = dateToTimestamp(date: "2018-04-11 00:00:00")
         
         client.readDatanodes(deviceId: deviceId, criteria: ["latitude", "Swift API Datanode"], fromDate: fromDate, toDate: toDate, limit: 10000) { datanodeReadArray, error in
-            XCTAssertNotNil(datanodeReadArray)
+            XCTAssertNotNil(datanodeReadArray?.datanodeReads)
             expect.fulfill()
         }
         
@@ -157,6 +158,7 @@ class IoTTicketSwiftAPITests: XCTestCase {
             XCTAssertTrue((deviceDatanodes?.fullSize)!>=2)
             XCTAssertEqual(10, deviceDatanodes?.limit)
             XCTAssertEqual(0, deviceDatanodes?.offset)
+            print(deviceDatanodes?.datanodes as Any)
             expect.fulfill()
         }
         
@@ -166,7 +168,7 @@ class IoTTicketSwiftAPITests: XCTestCase {
     
     private func waitExpectation() {
         
-        waitForExpectations(timeout: 10) { error in
+        waitForExpectations(timeout: 100) { error in
             if let error = error {
                 XCTFail("WaitForExpectation timed out with error: \(error)")
             }

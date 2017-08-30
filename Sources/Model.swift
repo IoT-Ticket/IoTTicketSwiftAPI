@@ -9,7 +9,7 @@
 import Foundation
 
 /// Your IoT device. Once registered, it will show up under the user's enterprise.
-open class Device: NSObject, NSCoding {
+public class Device: Codable {
     private var _name: String!
     private var _manufacturer: String!
     private var _type: String?
@@ -39,30 +39,31 @@ open class Device: NSObject, NSCoding {
         self._attributes = attributes
     }
     
-    public override init(){
-        
-    }
+//    public override init(){
+//
+//    }
     
-    public required init?(coder aDecoder: NSCoder) {
-        self._name = aDecoder.decodeObject(forKey: "name") as! String
-        self._manufacturer = aDecoder.decodeObject(forKey: "manufacturer") as! String
-        self._type = aDecoder.decodeObject(forKey: "type") as? String
-        self._attributes = aDecoder.decodeObject(forKey: "attributes") as? [[String:String]]
-        self._deviceId = aDecoder.decodeObject(forKey: "deviceId") as? String
-        self._createdAt = aDecoder.decodeObject(forKey: "createdAt") as? String
-        self._deviceDescription = aDecoder.decodeObject(forKey: "deviceDescription") as? String
-        self._href = aDecoder.decodeObject(forKey: "href") as? URL
-    }
-    public func encode(with aCoder: NSCoder) {
-        aCoder.encode(self.name, forKey: "name")
-        aCoder.encode(self.manufacturer, forKey: "manufacturer")
-        aCoder.encode(self.type, forKey: "type")
-        aCoder.encode(self.attributes, forKey: "attributes")
-        aCoder.encode(self.deviceId, forKey: "deviceId")
-        aCoder.encode(self.createdAt, forKey: "createdAt")
-        aCoder.encode(self.deviceDescription, forKey: "deviceDescription")
-        aCoder.encode(self.href, forKey: "href")
-    }
+//    public required init?(coder aDecoder: NSCoder) {
+//        self._name = aDecoder.decodeObject(forKey: "name") as! String
+//        self._manufacturer = aDecoder.decodeObject(forKey: "manufacturer") as! String
+//        self._type = aDecoder.decodeObject(forKey: "type") as? String
+//        self._attributes = aDecoder.decodeObject(forKey: "attributes") as? [[String:String]]
+//        self._deviceId = aDecoder.decodeObject(forKey: "deviceId") as? String
+//        self._createdAt = aDecoder.decodeObject(forKey: "createdAt") as? String
+//        self._deviceDescription = aDecoder.decodeObject(forKey: "deviceDescription") as? String
+//        self._href = aDecoder.decodeObject(forKey: "href") as? URL
+//    }
+//    public func encode(with aCoder: NSCoder) {
+//        aCoder.encode(self.name, forKey: "name")
+//        aCoder.encode(self.manufacturer, forKey: "manufacturer")
+//        aCoder.encode(self.type, forKey: "type")
+//        aCoder.encode(self.attributes, forKey: "attributes")
+//        aCoder.encode(self.deviceId, forKey: "deviceId")
+//        aCoder.encode(self.createdAt, forKey: "createdAt")
+//        aCoder.encode(self.deviceDescription, forKey: "deviceDescription")
+//        aCoder.encode(self.href, forKey: "href")
+//    }
+    
     
     /// A short name for the device. Maximum 100 characters.
     public var name: String! {
@@ -161,16 +162,51 @@ open class Device: NSObject, NSCoding {
         }
     }
     
+    public required init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self._name = try values.decode(String.self, forKey: .name)
+        self._manufacturer = try values.decode(String.self, forKey: .manufacturer)
+        self._type = try? values.decode(String.self, forKey: .type)
+        self._attributes = try? values.decode([[String:String]].self, forKey: .attributes)
+        self._deviceId = try values.decode(String.self, forKey: .deviceId)
+        self._createdAt = try? values.decode(String.self, forKey: .createdAt)
+        self._deviceDescription = try? values.decode(String.self, forKey: .deviceDescription)
+        self._href = try? values.decode(URL.self, forKey: .href)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.name, forKey: .name)
+        try container.encode(self.manufacturer, forKey: .manufacturer)
+        try container.encodeIfPresent(self.attributes, forKey: .attributes)
+        try container.encodeIfPresent(self.type, forKey: .type)
+        try container.encodeIfPresent(self.deviceId, forKey: .deviceId)
+        try container.encodeIfPresent(self.createdAt, forKey: .createdAt)
+        try container.encodeIfPresent(self.deviceDescription, forKey: .deviceDescription)
+        try container.encodeIfPresent(self.href, forKey: .href)
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case name
+        case manufacturer
+        case type
+        case attributes
+        case deviceId
+        case createdAt
+        case deviceDescription = "description"
+        case href
+    }
+    
 }
 
 /// Data values are written to the device’s datanodes. Each datanode is identified by its name and the path specified by the client.
 /// The datanode is created the first time it is encountered by the server.
 /// Intermediate nodes are also created if a path is specified the first time the datanode is encountered.
 /// The full path to the datanode should be specified when the datanode is to be read from.
-public class Datanode {
-    private var _name: String!
+public class Datanode: Encodable {
+    private var _name: String
     private var _path: String?
-    private var _v: Any!
+    private var _v: Any
     private var _ts: UInt64?
     private var _unit: String?
     private var _dataType: String?
@@ -188,7 +224,7 @@ public class Datanode {
             - unit: The unit associated with the data, preferably 1 or 2 characters.
             - dataType: When the datatype is not provided, the possible data type is inferred from the value first received by the server.
      */
-    public init(name: String!, path: String? = nil, v: Any!, ts: UInt64? = UInt64(Date().timeIntervalSince1970 * 1000), unit: String? = nil, dataType: String? = nil) {
+    public init(name: String, path: String? = nil, v: Any, ts: UInt64? = UInt64(Date().timeIntervalSince1970 * 1000), unit: String? = nil, dataType: String? = nil) {
         self._name = name
         self._path = path
         self._v = v
@@ -197,12 +233,8 @@ public class Datanode {
         self._dataType = dataType
     }
     
-    public init() {
-        
-    }
-    
     ///  A short description of the datanode. Maximum 100 characters.
-    public var name: String! {
+    public var name: String {
         get {
             
             return _name.restrictString(restriction: IoTRestrictions.maxNameLength)
@@ -227,9 +259,9 @@ public class Datanode {
     }
     
     /// The value to be written. This must be applicable to the datatype, if provided.
-    public var v: Any! {
+    public var v: String {
         get {
-            return _v
+            return String(describing: _v)
         }
         set {
             _v = newValue
@@ -281,77 +313,124 @@ public class Datanode {
         }
     }
     
+    private enum CodingKeys: String, CodingKey {
+        case name
+        case path
+        case v
+        case ts
+        case unit
+        case dataType
+    }
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.name, forKey: .name)
+        try container.encode(self.v, forKey: .v)
+        try container.encodeIfPresent(self.path, forKey: .path)
+        try container.encodeIfPresent(self.ts, forKey: .ts)
+        try container.encodeIfPresent(self.unit, forKey: .unit)
+        try container.encodeIfPresent(self.dataType, forKey: .dataType)
+    }
+    
 }
 
 /// Used for reading datanodes with values.
-public struct DatanodeRead {
+public struct DatanodeRead: Codable {
+    public var href: URL
+    public var datanodeReads: [Datanodes]?
+}
+
+public struct Datanodes: Codable {
     public var name: String!
     public var path: String?
     public var values: [Values]?
     public var unit: String?
     public var dataType: String?
-    
-    init(){}
 }
 
 /// Used for getting a list of datanodes.
-public struct DatanodeList {
-    public var fullSize: Int? = nil
-    public var limit: Int? = nil
-    public var offset: Int? = nil
-    public var datanodes: [DatanodeInfo]? = nil
+public struct DatanodeList: Codable {
+    public var fullSize: Int
+    public var limit: Int
+    public var offset: Int
+    public var datanodes: [DatanodeInfo]
+    
+    private enum CodingKeys: String, CodingKey {
+        case fullSize
+        case limit
+        case offset
+        case datanodes = "items"
+    }
 }
 
 /// Used to display datanode info from server.
-public struct DatanodeInfo {
-    public var unit: String!
-    public var dataType: String!
+public struct DatanodeInfo: Codable {
+    public var unit: String?
+    public var dataType: String?
     public var href: String!
     public var name: String!
-    public var path: String!
+    public var path: String?
 }
 
 /// Used for getting a list of devices.
-public struct DevicesList {
+public struct DevicesList: Codable {
     public var fullSize: Int? = nil
     public var limit: Int? = nil
     public var offset: Int? = nil
     public var devices: [Device]? = nil
+    
+    private enum CodingKeys: String, CodingKey {
+        case fullSize
+        case limit
+        case offset
+        case devices = "items"
+    }
 }
 
 /// Used to store write datanode result.
-public struct WriteDatanodesResult {
+public struct WriteDatanodesResult: Codable {
     public var totalWritten: Int? = nil
     public var writeResults: [WriteResults]? = nil
 }
 
 /// Used to store writeResults.
-public struct WriteResults {
+public struct WriteResults: Codable {
     public var href: String? = nil
     public var writtenCount: Int? = nil
 }
 /// Used to store quota information.
-public struct Quota {
+public struct Quota: Codable {
     public var totalDevices:Int! = nil
     public var maxNumberOfDevices:Int! = nil
     public var maxDataNodePerDevice: Int! = nil
-    public var usedStorageSize:Int! = nil
-    public var maxStorageSize:Int! = nil
+    public var usedStorageSize: Int! = nil
+    public var maxStorageSize: Int! = nil
 }
 
 /// Used to store device quota information
-public struct DeviceQuota {
+public struct DeviceQuota: Codable {
     public var totalRequestToday:Int! = nil
     public var maxReadRequestPerDay:Int! = nil
     public var numberOfDataNodes: Int! = nil
-    public var storageSize:Int! = nil
-    public var deviceId:String! = nil
+    public var storageSize: Int! = nil
+    public var deviceId: String! = nil
 }
 
 /// Used to store datanode values
-public struct Values {
-    public var value: String?
-    public var timeStamp: UInt64?
+public struct Values: Codable {
+    public var value: String
+    public var timeStamp: UInt64
+    
+    private enum CodingKeys: String, CodingKey {
+        case value = "v"
+        case timeStamp = "ts"
+    }
+}
+
+internal struct IoTError: Codable {
+    var description: String
+    var code: Int
+    var moreInfo: String
+    var apiver: Int
 }
 
 /// Used for parsing value and timestamp in reading datanode
@@ -373,19 +452,6 @@ public enum DataType: String {
 public enum Order: String {
     case ascending = "ascending"
     case descending = "descending"
-}
-
-extension Device {
-    /// Convert to dictionary
-    public func toDict() -> [String : Any] {
-        var dict : [String:Any] = [:]
-        dict["name"] = self.name
-        dict["manufacturer"] = self.manufacturer
-        dict["type"] = self.type
-        dict["description"] = self.deviceDescription
-        dict["attributes"] = self.attributes
-        return dict as [String : Any]
-    }
 }
 
 extension String {
