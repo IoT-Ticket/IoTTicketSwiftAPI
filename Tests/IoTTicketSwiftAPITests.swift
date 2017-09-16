@@ -21,10 +21,10 @@ class IoTTicketSwiftAPITests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        username = "***REMOVED***"
-        password = "***REMOVED***"
+        username = "username"
+        password = "password"
         baseURL = "https://my.iot-ticket.com/api/v1"
-        deviceId = "4e0f17895ae04c57a6d24baaae08b6b3"
+        deviceId = "deviceId"
         client = IoTTicketClient(baseURL: baseURL, username: username, password: password)
         
     }
@@ -122,11 +122,12 @@ class IoTTicketSwiftAPITests: XCTestCase {
         
         let datanode = Datanode(name: "latitude", v: arc4random())
         let datanode2 = Datanode(name: "Swift API Datanode", path: "/Swift", v: arc4random(), dataType: DataType.long.rawValue)
+        let test = Datanode(name: "GeoPin", v: [33.6,121.4,1000])
         
-        client.writeDatanode(deviceId: deviceId, datanodes: [datanode, datanode2]) { writeDatanodesResult, error in
+        client.writeDatanode(deviceId: deviceId, datanodes: [datanode, datanode2, test]) { writeDatanodesResult, error in
             
-            XCTAssertEqual(2, writeDatanodesResult?.writeResults?.count)
-            XCTAssertEqual(2, writeDatanodesResult?.totalWritten)
+            XCTAssertEqual(3, writeDatanodesResult?.writeResults?.count)
+            XCTAssertEqual(3, writeDatanodesResult?.totalWritten)
             expect.fulfill()
         }
         
