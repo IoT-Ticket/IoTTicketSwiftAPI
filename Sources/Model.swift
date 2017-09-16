@@ -326,7 +326,7 @@ public struct DatanodeList: Codable {
     public var fullSize: Int
     public var limit: Int
     public var offset: Int
-    public var datanodes: [DatanodeInfo]
+    public var datanodes: [DatanodeInfo]?
     
     private enum CodingKeys: String, CodingKey {
         case fullSize
