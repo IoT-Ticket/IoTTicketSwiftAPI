@@ -310,9 +310,15 @@ open class Datanode: Encodable {
 /// Used for reading datanodes with values.
 public struct DatanodeRead: Codable {
     public var href: URL
-    public var datanodeReads: [Datanodes]?
+    public var datanodes: [Datanodes]?
+    
+    private enum CodingKeys: String, CodingKey {
+        case href
+        case datanodes = "datanodeReads"
+    }
 }
 
+/// Used to store datanodeReads
 public struct Datanodes: Codable {
     public var name: String!
     public var path: String?
