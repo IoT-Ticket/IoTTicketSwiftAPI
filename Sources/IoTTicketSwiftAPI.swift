@@ -121,7 +121,7 @@ open class IoTTicketClient {
         - toDate: The number of milliseconds since the Epoch. It defines the time to which the data read ends. It defaults to the current time if this value is not provided and a fromdate exists. If neither the fromdate and todate are provided, the latest value is returned.
         - limit: The maximum number of data points returned for each datanode queried.
         - order: It orders the values by timestamp, in either ascending or descending order.
-        - completion: A closure which is called with datanodeReadArray (array of DatanodeRead object) and error (IoTServerError) if any.
+        - completion: A closure which is called with datanodeRead object and error (IoTServerError) if any.
      */
     
     open func readDatanodes(deviceId: String, criteria: [String], fromDate: UInt64? = nil, toDate: UInt64? = nil, limit: Int = 1000, order: Order = Order.ascending, completion: @escaping DownloadedDeviceDatanodeRead) {

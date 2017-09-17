@@ -21,10 +21,10 @@ class IoTTicketSwiftAPITests: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        username = "username"
-        password = "password"
+        username = "***REMOVED***"
+        password = "***REMOVED***"
         baseURL = "https://my.iot-ticket.com/api/v1"
-        deviceId = "deviceId"
+        deviceId = "2e835433958449ab82ade3000d073173"
         client = IoTTicketClient(baseURL: baseURL, username: username, password: password)
         
     }
@@ -143,7 +143,7 @@ class IoTTicketSwiftAPITests: XCTestCase {
         
         client.readDatanodes(deviceId: deviceId, criteria: ["latitude", "Swift API Datanode"], fromDate: fromDate, toDate: toDate, limit: 10000) { datanodeRead, error in
             XCTAssertNotNil(datanodeRead?.href)
-            XCTAssertNotNil(datanodeRead?.datanodeReads)
+            XCTAssertNotNil(datanodeRead?.datanodes)
             expect.fulfill()
         }
         
