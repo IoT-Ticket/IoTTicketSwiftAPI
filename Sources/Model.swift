@@ -9,7 +9,7 @@
 import Foundation
 
 /// Your IoT device. Once registered, it will show up under the user's enterprise.
-public class Device: Codable {
+open class Device: Codable {
     private var _name: String
     private var _manufacturer: String
     private var _type: String?
@@ -177,7 +177,7 @@ public class Device: Codable {
 /// The datanode is created the first time it is encountered by the server.
 /// Intermediate nodes are also created if a path is specified the first time the datanode is encountered.
 /// The full path to the datanode should be specified when the datanode is to be read from.
-public class Datanode: Encodable {
+open class Datanode: Encodable {
     private var _name: String
     private var _path: String?
     private var _v: Any
