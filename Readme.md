@@ -29,7 +29,7 @@ IoT-Ticket REST client in Swift
 $ gem install cocoapods
 ```
 
-> CocoaPods 1.1.0+ is required to build IoTTicketSwiftAPI 0.0.1+.
+> CocoaPods 1.1.0+ is required to build IoTTicketSwiftAPI 0.0.3+.
 
 To integrate IoTTicketSwiftAPI into your Xcode project using CocoaPods, specify it in your `Podfile`:
 
@@ -38,7 +38,7 @@ source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, '8.0'
 use_frameworks!
 
-pod 'IoTTicketSwiftAPI', '~> 0.0.1'
+pod 'IoTTicketSwiftAPI', '~> 0.0.3'
 ```
 
 Then, run the following command:
@@ -61,7 +61,7 @@ $ brew install carthage
 To integrate IoTTicketSwiftAPI into your Xcode project using Carthage, specify it in your `Cartfile`:
 
 ```ogdl
-github "IoTTicketSwiftAPI/IoTTicketSwiftAPI" ~> 0.0.1
+github "IoTTicketSwiftAPI/IoTTicketSwiftAPI" ~> 0.0.3
 ```
 ### Swift Package Manager
 
@@ -73,7 +73,7 @@ import PackageDescription
 let package = Package(
     name: "IoTTicketSwiftAPI",
     dependencies: [
-        .Package(url: "https://github.com/iDanbo/IoTTicketSwiftAPI.git", "0.0.1")
+        .Package(url: "https://github.com/iDanbo/IoTTicketSwiftAPI.git", "0.0.3")
     ]
 )
 ```
@@ -170,8 +170,8 @@ client.getDatanodes(deviceId: deviceId, limit: 10, offset: 0) { deviceDatanodes,
 let fromDate = dateToTimestamp(date: "2016-02-21 00:00:00")
 let toDate = dateToTimestamp(date: "2017-04-11 00:00:00")
         
-client.readDatanodes(deviceId: deviceId, criteria: ["latitude", "longitude"], fromDate: fromDate, toDate: toDate, limit: 10000) { datanodeReadArray, error in
-    if let datanodeReadArray {
+client.readDatanodes(deviceId: deviceId, criteria: ["latitude", "longitude"], fromDate: fromDate, toDate: toDate, limit: 10000) { datanodeRead, error in
+    if let datanodes = datanodeRead?.datanodes {
         // Read datanodes with values
     }
   }
