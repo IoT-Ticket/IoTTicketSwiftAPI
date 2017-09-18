@@ -9,7 +9,7 @@
 import Foundation
 
 /// Your IoT device. Once registered, it will show up under the user's enterprise.
-open class Device: Codable {
+open class Device: NSObject, Codable {
     private var _name: String
     private var _manufacturer: String
     private var _type: String?
