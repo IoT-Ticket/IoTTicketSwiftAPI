@@ -27,5 +27,6 @@ public enum IoTServerError: Int {
     case QuotaViolation = 8002
     case BadInputParamter = 8003
     case CaseWriteFailed = 8004
+    case NoDataInResponse
     case UncaughtException
 }

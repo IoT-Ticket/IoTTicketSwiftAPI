@@ -406,6 +406,7 @@ public struct Values: Codable {
     }
 }
 
+/// Used for getting error info
 internal struct IoTError: Codable {
     var description: String
     var code: Int

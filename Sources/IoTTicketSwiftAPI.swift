@@ -23,7 +23,7 @@ public typealias DownloadedDeviceQuota = (_ deviceQuota: DeviceQuota?, _ error: 
 /// A closure executed when the function which returns writeDatanodesResult is complete
 public typealias DownloadedWriteDatanodes = (_ writeDatanodesResult: WriteDatanodesResult?, _ error: IoTServerError?) -> ()
 /// A closure executed when the function which returns an object is complete
-public typealias DownloadedData = (_ success: Bool, _ object: Data) -> ()
+public typealias DownloadedData = (_ success: Bool, _ object: Data?) -> ()
 
 // MARK: - IoT-Ticket API Client
 
@@ -100,7 +100,7 @@ open class IoTTicketClient {
             guard let completion = completion else { return }
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    let writeDatanodeResult = try? self.decoder.decode(WriteDatanodesResult.self, from: object)
+                    let writeDatanodeResult = try? self.decoder.decode(WriteDatanodesResult.self, from: object!)
                     completion(writeDatanodeResult, nil)
                 } else {
                     completion(nil, getErrorInfo(data: object))
@@ -166,7 +166,7 @@ open class IoTTicketClient {
             DispatchQueue.main.async() { () -> Void in
                 if success {
                     do {
-                    let datanodeReadArray = try self.decoder.decode(DatanodeRead.self, from: object)
+                    let datanodeReadArray = try self.decoder.decode(DatanodeRead.self, from: object!)
                         completion(datanodeReadArray, nil)
                     } catch {
                         print(error)
@@ -198,7 +198,7 @@ open class IoTTicketClient {
             DispatchQueue.main.async() { () -> Void in
                 if success {
                     do {
-                        let datanodeList = try self.decoder.decode(DatanodeList.self, from: object)
+                        let datanodeList = try self.decoder.decode(DatanodeList.self, from: object!)
                         completion(datanodeList, nil)
                     } catch {
                         print(error)
@@ -225,10 +225,9 @@ open class IoTTicketClient {
         /// URL path for getting information of devices
         var param: String { return deviceResource + "?limit=\(limit)&offset=\(offset)" }
         get(request: clientURLRequest(path: param, credentials: credentials)) { (success, object) -> () in
-            print(object)
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    let devicesList = try? self.decoder.decode(DevicesList.self, from: object)
+                    let devicesList = try? self.decoder.decode(DevicesList.self, from: object!)
                     completion(devicesList, nil)
                 } else {
                     completion(nil, getErrorInfo(data: object))
@@ -254,7 +253,7 @@ open class IoTTicketClient {
             
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    let deviceDetails = try? self.decoder.decode(Device.self, from: object)
+                    let deviceDetails = try? self.decoder.decode(Device.self, from: object!)
                     completion(deviceDetails, nil)
                 } else {
                     completion(nil, getErrorInfo(data: object))
@@ -277,7 +276,7 @@ open class IoTTicketClient {
         post(request: clientURLRequestWithParameters(path: deviceResource, params: device, credentials: credentials)) { (success, object) -> () in
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    let deviceDetails = try? self.decoder.decode(Device.self, from: object)
+                    let deviceDetails = try? self.decoder.decode(Device.self, from: object!)
                     completion(deviceDetails, nil)
                 } else {
                     completion(nil, getErrorInfo(data: object))
@@ -300,7 +299,7 @@ open class IoTTicketClient {
             
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    let quota = try? self.decoder.decode(Quota.self, from: object)
+                    let quota = try? self.decoder.decode(Quota.self, from: object!)
                     completion(quota, nil)
                 } else {
                     completion(nil, getErrorInfo(data: object))
@@ -324,7 +323,7 @@ open class IoTTicketClient {
             
             DispatchQueue.main.async() { () -> Void in
                 if success {
-                    let deviceQuota = try? self.decoder.decode(DeviceQuota.self, from: object)
+                    let deviceQuota = try? self.decoder.decode(DeviceQuota.self, from: object!)
                     completion(deviceQuota, nil)
                 } else {
                     completion(nil, getErrorInfo(data: object))
@@ -344,15 +343,15 @@ open class IoTTicketClient {
         
         session.dataTask(with: mutableRequest) { (data, response, error) -> Void in
             guard let data = data else {
-                print("No data in response.")
+                completion(false, nil)
                 return
             }
-                if let response = response as? HTTPURLResponse, 200...299 ~= response.statusCode {
-                    completion(true, data)
-                } else {
-                    // handle error
-                    completion(false, data)
-                }
+            if let response = response as? HTTPURLResponse, 200...299 ~= response.statusCode {
+                completion(true, data)
+            } else {
+                // handle error
+                completion(false, data)
+            }
             }.resume()
         
     }
@@ -386,8 +385,6 @@ open class IoTTicketClient {
         } catch {
             print(error)
         }
-        
-        //            print("PARAMS: \(params)")
         print("HTTP BODY: ", String(bytes: request.httpBody!, encoding: String.Encoding.utf8)!)
         if let credentials = credentials {
             request.addValue("Basic \(credentials)", forHTTPHeaderField: "Authorization")
@@ -438,18 +435,18 @@ public func deviceAttribute(key: String, value: String) -> Dictionary<String,Str
 
 
 /// Extract error from server.
-fileprivate func getErrorInfo(data: Data) -> IoTServerError? {
-    let object = try? JSONSerialization.jsonObject(with: data, options: [])
-    var message = "There was an error"
-    var Code: Int? = nil
-    if let error = object as? Dictionary<String, AnyObject> {
-        if let errorCode = error["code"] as? Int, let description = error["description"] as? String {
-            message += ": \(description)\n Code: \(errorCode)"
-            Code = errorCode
-            print(message)
-            return IoTServerError(rawValue: Code!)
-        }
+fileprivate func getErrorInfo(data: Data?) -> IoTServerError {
+    guard let data = data else {
+        return IoTServerError.NoDataInResponse
     }
-    
-    return IoTServerError.UncaughtException
+    var message = "There was an error"
+    do {
+        let IoTErr = try JSONDecoder().decode(IoTError.self, from: data)
+        message += ": \(IoTErr.description)\n Code: \(IoTErr.code)"
+        print(message)
+        return IoTServerError(rawValue: IoTErr.code) ?? IoTServerError.UncaughtException
+    } catch {
+        print(error)
+        return IoTServerError.UncaughtException
+    }
 }
