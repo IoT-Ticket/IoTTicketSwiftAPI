@@ -29,7 +29,7 @@ IoT-Ticket REST client in Swift
 $ gem install cocoapods
 ```
 
-> CocoaPods 1.1.0+ is required to build IoTTicketSwiftAPI 0.0.3+.
+> CocoaPods 1.1.0+ is required to build IoTTicketSwiftAPI 0.0.6+.
 
 To integrate IoTTicketSwiftAPI into your Xcode project using CocoaPods, specify it in your `Podfile`:
 
@@ -38,7 +38,7 @@ source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, '8.0'
 use_frameworks!
 
-pod 'IoTTicketSwiftAPI', '~> 0.0.3'
+pod 'IoTTicketSwiftAPI', '~> 0.0.6'
 ```
 
 Then, run the following command:
@@ -61,7 +61,7 @@ $ brew install carthage
 To integrate IoTTicketSwiftAPI into your Xcode project using Carthage, specify it in your `Cartfile`:
 
 ```ogdl
-github "IoTTicketSwiftAPI/IoTTicketSwiftAPI" ~> 0.0.3
+github "IoTTicketSwiftAPI/IoTTicketSwiftAPI" ~> 0.0.6
 ```
 ### Swift Package Manager
 
@@ -73,7 +73,7 @@ import PackageDescription
 let package = Package(
     name: "IoTTicketSwiftAPI",
     dependencies: [
-        .Package(url: "https://github.com/iDanbo/IoTTicketSwiftAPI.git", "0.0.3")
+        .Package(url: "https://github.com/iDanbo/IoTTicketSwiftAPI.git", "0.0.6")
     ]
 )
 ```
